@@ -1,0 +1,31 @@
+<script>
+
+  function throttle(fn, wait) {
+    let timeout;
+    let first = true;
+
+    return function() {
+      const context = this, args = arguments;
+
+      if (first) {
+        fn.apply(context, args)
+        first = false
+        return;
+      }
+
+      if (timeout) {
+        return;
+      }
+
+      timeout = setTimeout(() => {
+        clearTimeout(timeout)
+        timeout = null
+        fn.apply(context, args)
+      }, wait);
+    }
+  }
+
+  const effect = throttle(function() {console.log('here run resize')}, 300)
+
+  window.addEventListener('resize', effect)
+</script>

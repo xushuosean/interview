@@ -1,0 +1,27 @@
+<script>
+  function debounce(func, wait, immediate) {
+	var timeout;
+
+  // return a function
+	return function() {
+    // 保存this指向和参数
+		var context = this, args = arguments;
+    // define a function named later
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+    // 立即 且 timeout空
+		var callNow = immediate && !timeout;
+
+    // 如果在250ms以内又触发这个方法，则清除timeout，重新计时
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+};
+
+const effect = debounce(function () {console.log('here run resize')}, 250)
+
+window.addEventListener('resize', effect)
+</script>

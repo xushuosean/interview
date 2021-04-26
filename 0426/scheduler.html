@@ -1,0 +1,53 @@
+<script>
+  class Scheduler {
+    constructor() {
+      // 当前已在进程中的promise计数器
+      this.promiseCount = 0;
+      // 临时存储promise的存储器
+      this.tempArray = []
+    }
+    // 推入是同步的，但是进入池子的promise的受限制的
+    add(promiseCreator) {
+      return new Promise(resolve => {
+        this.tempArray.push({ promiseCreator, resolve })
+        this.run()
+      })
+    }
+
+    run() {
+      if (this.tempArray.length > 0 && this.promiseCount < 2) {
+        this.promiseCount++
+        let { promiseCreator, resolve } = this.tempArray.shift()
+        Promise.resolve(promiseCreator()).then(() => {
+          resolve()
+          this.promiseCount--
+          this.run()
+        })
+      }
+    }
+  }
+
+  const timeout = (time) => new Promise(resolve => {
+    setTimeout(resolve, time)
+  })
+
+  const scheduler = new Scheduler()
+
+  const addTask = (time, order) => {
+    scheduler.add(() => timeout(time))
+      .then(() => console.log(order))
+  }
+
+  addTask(1000, '1')
+  addTask(500, '2')
+  addTask(300, '3')
+  addTask(400, '4')
+
+// output: 2 3 1 4
+// 一开始，1、2两个任务进入队列
+// 500ms时，2完成，输出2，任务3进队
+// 800ms时，3完成，输出3，任务4进队
+// 1000ms时，1完成，输出1
+// 1200ms时，4完成，输出4
+
+</script>
